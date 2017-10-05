@@ -1,0 +1,7 @@
+name: Spigottasktwo
+version: ${project.version}
+main: me.jordanwood.spigottasktwo.Spigottasktwo
+prefix: ST2
+authors: [Jordan]
+description: Task two for PrimeMC interview
+website: http://www.jordanwood.me
