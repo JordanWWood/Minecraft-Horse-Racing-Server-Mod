@@ -11,12 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StateManager {
-    private State currentState;
+    private State currentState = null;
     private List<Listener> currentListeners = new ArrayList<>();
-
-    public StateManager(State state) {
-        setCurrentState(state);
-    }
 
     public void nextState() {
         switch (currentState) {
@@ -28,8 +24,6 @@ public class StateManager {
     }
 
     public void setCurrentState(State currentState) {
-        if (this.currentState == currentState) return;
-
         StateChangeEvent event = new StateChangeEvent(currentState);
         Bukkit.getServer().getPluginManager().callEvent(event);
 

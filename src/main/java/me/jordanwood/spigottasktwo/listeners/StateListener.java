@@ -3,11 +3,11 @@ package me.jordanwood.spigottasktwo.listeners;
 import me.jordanwood.spigottasktwo.SpigotTaskTwo;
 import me.jordanwood.spigottasktwo.events.StateChangeEvent;
 import me.jordanwood.spigottasktwo.managers.ScoreboardManager;
+import me.jordanwood.spigottasktwo.managers.StateManager;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.SpacerRow;
 import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -17,16 +17,17 @@ public class StateListener implements Listener {
     @EventHandler
     public void onStateChange(StateChangeEvent e) {
         switch (e.getState()) {
-            case WAITING: onPreGame(); break;
+            case WAITING: onWaiting(); break;
             case PRESTART: onPreStart(); break;
             case INGAME: onInGame(); break;
             case ENDGAME: onEndGame(); break;
         }
     }
 
-    private void onPreGame() {
+    private void onWaiting() {
         SpigotTaskTwo.getStateManager().registerListeners(new WaitingListener());
 
+        SpigotTaskTwo.getInstance().getLogger().info("Running1");
         WaitingListener.waiting = new Scoreboard(scoreboardTitle);
         WaitingListener.countDown = new Scoreboard(scoreboardTitle);
 
@@ -46,7 +47,7 @@ public class StateListener implements Listener {
         TextRow players = new TextRow("1/12");
         WaitingListener.playerCountWaitingRow = WaitingListener.waiting.addRow(players);
         WaitingListener.playerCountCountDownRow = WaitingListener.countDown.addRow(players);
-        ScoreboardManager.getInstance().setScoreboard(WaitingListener.waiting);
+        SpigotTaskTwo.getScoreboardManager().setScoreboard(WaitingListener.waiting);
     }
 
     private void onPreStart() {

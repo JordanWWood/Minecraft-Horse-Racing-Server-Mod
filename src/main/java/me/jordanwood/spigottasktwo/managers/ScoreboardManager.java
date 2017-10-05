@@ -1,4 +1,6 @@
 package me.jordanwood.spigottasktwo.managers;
+
+import me.jordanwood.spigottasktwo.SpigotTaskTwo;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.Row;
 import net.md_5.bungee.api.ChatColor;
@@ -13,14 +15,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ScoreboardManager {
-    private static ScoreboardManager instance;
     private static Scoreboard currentScoreboard;
 
     public void setScoreboard(Scoreboard scoreboard) {
         if (currentScoreboard != null) clearScoreboard();
         currentScoreboard = scoreboard;
         installScoreboard();
-        PlayerManager.getInstance().installAllColours();
+        SpigotTaskTwo.getPlayerManager().installAllColours();
     }
 
     public void clearScoreboard() {
@@ -61,9 +62,7 @@ public class ScoreboardManager {
     }
 
     private void updateRows(HashMap<Integer, String> rows, Player player) {
-        if (rows != null && rows.size() > 0) rows.forEach((score, output) -> {
-            this.updateRow(score, output, player);
-        });
+        if (rows != null && rows.size() > 0) rows.forEach((score, output) -> this.updateRow(score, output, player));
     }
 
     private void updateRow(Integer index, String row, Player player) {
@@ -87,7 +86,7 @@ public class ScoreboardManager {
     private String scrapeFormatting(String input) {
         String strPatter = "(" + ChatColor.COLOR_CHAR + "[0-9a-fklmnor])";
         Pattern pattern = Pattern.compile(strPatter);
-        String formatting = "";
+        StringBuilder formatting = new StringBuilder();
 
         Matcher matcher = pattern.matcher(input);
 
@@ -103,12 +102,12 @@ public class ScoreboardManager {
             if (isColour(match)) {
                 return ChatColor.COLOR_CHAR + "" + ((char) match) + formatting;
             } else if (isFormatting(match)) {
-                formatting = ChatColor.COLOR_CHAR + "" + ((char) match) + formatting;
+                formatting.insert(0, ChatColor.COLOR_CHAR + "" + ((char) match));
             } else if (isReset(match)) {
                 return "" + formatting;
             }
         }
-        return formatting;
+        return formatting.toString();
     }
 
     private boolean isColour(int character) {
@@ -197,11 +196,6 @@ public class ScoreboardManager {
         player.setScoreboard(scoreboard);
 
         updateScoreboard(player);
-        PlayerManager.getInstance().installAllColoursForPlayer(player.getUniqueId());
-    }
-
-    public static ScoreboardManager getInstance() {
-        if (instance == null) instance = new ScoreboardManager();
-        return instance;
+        SpigotTaskTwo.getPlayerManager().installAllColoursForPlayer(player.getUniqueId());
     }
 }

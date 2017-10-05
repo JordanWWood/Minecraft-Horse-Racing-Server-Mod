@@ -1,5 +1,6 @@
 package me.jordanwood.spigottasktwo.managers;
 
+import me.jordanwood.spigottasktwo.SpigotTaskTwo;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
@@ -8,8 +9,6 @@ import java.util.*;
 
 
 public class PlayerManager {
-    private static PlayerManager instance;
-
     private static HashMap<UUID, String> playerColours = new HashMap<>();
 
     public void setPlayerNameColour(UUID id, String format) {
@@ -66,10 +65,5 @@ public class PlayerManager {
         if (playerColours.containsKey(id)) {
             this.unsetPlayerNameColour(id);
         }
-    }
-
-    public static PlayerManager getInstance() {
-        if (instance == null) instance = new PlayerManager();
-        return instance;
     }
 }
