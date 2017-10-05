@@ -1,6 +1,6 @@
-name: Spigottasktwo
+name: SpigotTaskTwo
 version: ${project.version}
-main: me.jordanwood.spigottasktwo.Spigottasktwo
+main: me.jordanwood.spigottasktwo.SpigotTaskTwo
 prefix: ST2
 authors: [Jordan]
 description: Task two for PrimeMC interview
