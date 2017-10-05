@@ -27,17 +27,22 @@ public class WaitingListener implements Listener {
     static UUID countDownTimeRow, playerCountWaitingRow, playerCountCountDownRow;
     static Scoreboard waiting, countDown;
 
-    private boolean timerGoing;
+    private boolean isTimerCancelled = false;
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
         if (e.getMessage().equals("startrace")) {
             tickTask(10);
+        } else if (e.getMessage().equals("cancel")) {
+            Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(ChatColor.GOLD + "Game cancelled"));
+
+            isTimerCancelled = true;
         }
     }
 
     private void tickTask(int timer) {
         Bukkit.getScheduler().runTaskLater(SpigotTaskTwo.getInstance(), () -> {
+            if (isTimerCancelled) return;
             Bukkit.getOnlinePlayers().forEach((player) -> player.sendMessage(ChatColor.GOLD + "Game starting in: " + timer));
 
             if (timer != 0) {
