@@ -1,7 +1,6 @@
 package me.jordanwood.spigottasktwo.listeners;
 
-/**
- * Created by jorda_000 on 05/10/2017.
- */
-public class PreStartListener {
+import org.bukkit.event.Listener;
+
+public class PreStartListener implements Listener {
 }

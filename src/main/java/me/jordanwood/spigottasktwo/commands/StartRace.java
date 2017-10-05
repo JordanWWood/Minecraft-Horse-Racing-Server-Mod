@@ -1,7 +1,16 @@
 package me.jordanwood.spigottasktwo.commands;
 
-/**
- * Created by jorda_000 on 05/10/2017.
- */
-public class StartRace {
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class StartRace implements CommandExecutor {
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (sender instanceof Player) {
+
+        }
+        return false;
+    }
 }
