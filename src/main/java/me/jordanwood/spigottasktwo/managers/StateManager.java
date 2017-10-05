@@ -18,14 +18,23 @@ public class StateManager {
         setCurrentState(state);
     }
 
+    public void nextState() {
+        switch (currentState) {
+            case PRESTART: setCurrentState(State.WAITING); break;
+            case WAITING: setCurrentState(State.INGAME); break;
+            case INGAME: setCurrentState(State.ENDGAME); break;
+            case ENDGAME: setCurrentState(State.PRESTART); break;
+        }
+    }
+
     public void setCurrentState(State currentState) {
+        if (this.currentState == currentState) return;
+
         StateChangeEvent event = new StateChangeEvent(currentState);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
-            for (Listener listener: currentListeners) {
-                HandlerList.unregisterAll(listener);
-            }
+            currentListeners.forEach(HandlerList::unregisterAll);
 
             this.currentState = currentState;
         }
@@ -40,3 +49,5 @@ public class StateManager {
         return currentState;
     }
 }
+
+

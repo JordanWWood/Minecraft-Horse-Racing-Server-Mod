@@ -1,7 +1,7 @@
 package me.jordanwood.spigottasktwo.utils;
 
 public enum State {
-    PREGAME,
+    WAITING,
     PRESTART,
     INGAME,
     ENDGAME,

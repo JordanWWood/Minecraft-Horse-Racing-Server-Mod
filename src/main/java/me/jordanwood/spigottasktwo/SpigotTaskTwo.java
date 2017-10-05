@@ -15,7 +15,7 @@ public final class SpigotTaskTwo extends JavaPlugin {
         instance = this;
 
         Bukkit.getServer().getPluginManager().registerEvents(new StateListener(), this);
-        stateManager = new StateManager(State.PREGAME);
+        stateManager = new StateManager(State.WAITING);
     }
 
     @Override
