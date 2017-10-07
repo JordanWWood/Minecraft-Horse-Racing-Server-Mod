@@ -25,6 +25,7 @@ import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class StateListener implements Listener {
@@ -101,7 +102,7 @@ public class StateListener implements Listener {
             spawnHorse(p);
         }
 
-        tickTask(10, true);
+        tickTask(10, true, null);
 
         SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
     }
@@ -118,10 +119,13 @@ public class StateListener implements Listener {
             player.sendMessage(ChatColor.GOLD + "You will be moved back to lobby in 10 seconds");
         });
 
-        tickTask(10, false);
+        tickTask(10, false, () -> {
+            for (Player player : Bukkit.getOnlinePlayers())
+                player.teleport(previousLocations.get(player.getUniqueId()));
+        });
     }
 
-    private void tickTask(int timer, boolean title) {
+    private void tickTask(int timer, boolean title, @Nullable Runnable onEnd) {
         Bukkit.getScheduler().runTaskLater(SpigotTaskTwo.getInstance(), () -> {
             Bukkit.getOnlinePlayers().forEach((player) -> {
                 if (title) {
@@ -132,11 +136,15 @@ public class StateListener implements Listener {
             });
 
             if (timer != 0) {
-                tickTask(timer - 1, title);
+                tickTask(timer - 1, title, onEnd);
                 return;
             }
 
             Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), () -> SpigotTaskTwo.getStateManager().nextState());
+
+            if (onEnd != null) {
+                Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), onEnd);
+            }
         }, 20L);
     }
 
