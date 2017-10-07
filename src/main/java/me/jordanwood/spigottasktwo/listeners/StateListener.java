@@ -10,6 +10,7 @@ import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
 import me.jordanwood.spigottasktwo.utils.Title;
 
 import net.md_5.bungee.api.ChatColor;
+
 import net.minecraft.server.v1_12_R1.AttributeInstance;
 import net.minecraft.server.v1_12_R1.EntityLiving;
 import net.minecraft.server.v1_12_R1.GenericAttributes;
@@ -24,22 +25,29 @@ import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class StateListener implements Listener {
-    private static final String scoreboardTitle = ChatColor.GOLD +""+ ChatColor.BOLD + "SpigotTask2";
+    private static final String scoreboardTitle = ChatColor.GOLD + "" + ChatColor.BOLD + "SpigotTask2";
 
     static WorldConfig worldConfig;
+    private Map<UUID, Location> previousLocations;
 
     @EventHandler
     public void onStateChange(StateChangeEvent e) {
         switch (e.getState()) {
-            case WAITING: onWaiting(); break;
-            case PRESTART: onPreStart(); break;
-            case INGAME: onInGame(); break;
-            case ENDGAME: onEndGame(); break;
+            case WAITING:
+                onWaiting();
+                break;
+            case PRESTART:
+                onPreStart();
+                break;
+            case INGAME:
+                onInGame();
+                break;
+            case ENDGAME:
+                onEndGame();
+                break;
         }
     }
 
@@ -50,7 +58,7 @@ public class StateListener implements Listener {
         WaitingListener.waiting = new Scoreboard(scoreboardTitle);
         WaitingListener.countDown = new Scoreboard(scoreboardTitle);
 
-        TextRow timerTitle = new TextRow(ChatColor.GOLD +""+ ChatColor.BOLD+"Starting in:");
+        TextRow timerTitle = new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Starting in:");
         WaitingListener.countDown.addRows(new SpacerRow(), timerTitle);
         TextRow waiting = new TextRow("Awaiting players...");
         WaitingListener.waiting.addRows(new SpacerRow(), timerTitle, waiting, new SpacerRow());
@@ -59,7 +67,7 @@ public class StateListener implements Listener {
         WaitingListener.countDownTimeRow = WaitingListener.countDown.addRow(timer);
         WaitingListener.countDown.addRow(new SpacerRow());
 
-        TextRow playersTitle = new TextRow(ChatColor.GOLD +""+ ChatColor.BOLD+"Players:");
+        TextRow playersTitle = new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:");
         WaitingListener.waiting.addRow(playersTitle);
         WaitingListener.countDown.addRow(playersTitle);
 
@@ -83,15 +91,17 @@ public class StateListener implements Listener {
         InGameListener.gameBoard.addRows(new SpacerRow(), new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:"));
 
         int index = 0;
-        for (Player p: Bukkit.getOnlinePlayers()) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
             Vector v = worldConfig.getSpawnLocations().get(index);
+            previousLocations.put(p.getUniqueId(), p.getLocation());
+
             p.teleport(new Location(world, v.getX(), v.getY(), v.getZ()));
 
             InGameListener.gameBoard.addRow(new TextRow(p.getName()));
             spawnHorse(p);
         }
 
-        tickTask(10);
+        tickTask(10, true);
 
         SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
     }
@@ -103,21 +113,30 @@ public class StateListener implements Listener {
     }
 
     private void onEndGame() {
-        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(EndListener.getWinner() + " has won!"));
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            player.sendMessage(ChatColor.GOLD + EndListener.getWinner().getName() + " has won!");
+            player.sendMessage(ChatColor.GOLD + "You will be moved back to lobby in 10 seconds");
+        });
 
-        SpigotTaskTwo.getStateManager().nextState();
+        tickTask(10, false);
     }
 
-    private void tickTask(int timer) {
+    private void tickTask(int timer, boolean title) {
         Bukkit.getScheduler().runTaskLater(SpigotTaskTwo.getInstance(), () -> {
-            Bukkit.getOnlinePlayers().forEach((player) -> Title.createTitle(player, String.valueOf(timer), ""));
+            Bukkit.getOnlinePlayers().forEach((player) -> {
+                if (title) {
+                    Title.createTitle(player, String.valueOf(timer), "");
+                } else {
+                    player.sendMessage(ChatColor.GOLD + "" + timer);
+                }
+            });
 
             if (timer != 0) {
-                tickTask(timer - 1);
+                tickTask(timer - 1, title);
                 return;
             }
 
-            Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()-> SpigotTaskTwo.getStateManager().nextState());
+            Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), () -> SpigotTaskTwo.getStateManager().nextState());
         }, 20L);
     }
 
@@ -141,8 +160,7 @@ public class StateListener implements Listener {
 
 class BlankChunkGenerator extends ChunkGenerator {
     @Override
-    public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid)
-    {
+    public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid) {
         return new byte[world.getMaxHeight() / 16][];
     }
 }

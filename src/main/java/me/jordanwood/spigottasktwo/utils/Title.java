@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class Title {
-    public static boolean createTitle(Player p, String message, @Nullable String subMessage){
+    public static void createTitle(Player p, String message, @Nullable String subMessage){
         IChatBaseComponent chatTitle = IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + message + "\"}");
 
 
@@ -33,7 +33,6 @@ public class Title {
         }
 
         pc.sendPacket(length);
-        return true;
-    }
+}
 }
 
