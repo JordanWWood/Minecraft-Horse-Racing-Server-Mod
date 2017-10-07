@@ -51,6 +51,7 @@ public class WaitingListener implements Listener {
                 SpigotTaskTwo.getScoreboardManager().updateScoreboard();
 
                 tickTask(timer - 1);
+                return;
             }
 
             ((TextRow)countDown.getRow(countDownTimeRow)).setText(String.format("%1$tM:%1$tS", TimeUnit.SECONDS.toMillis(timer)));

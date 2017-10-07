@@ -21,13 +21,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class StateListener implements Listener {
-    private static String scoreboardTitle = ChatColor.GOLD +""+ ChatColor.BOLD + "SpigotTask2";
+    private static final String scoreboardTitle = ChatColor.GOLD +""+ ChatColor.BOLD + "SpigotTask2";
+
     static WorldConfig worldConfig;
 
     @EventHandler
@@ -79,23 +81,29 @@ public class StateListener implements Listener {
         InGameListener.gameBoard = new Scoreboard(scoreboardTitle);
         InGameListener.gameBoard.addRows(new SpacerRow(), new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:"));
 
+        int index = 0;
         List<Horse> Horses = new ArrayList<>();
         for (Player p: Bukkit.getOnlinePlayers()) {
-            p.teleport(new Location(world, 0, 0, 0));
+            Vector v = worldConfig.getSpawnLocations().get(index);
+            p.teleport(new Location(world, v.getX(), v.getY(), v.getZ()));
 
             InGameListener.gameBoard.addRow(new TextRow(p.getName()));
             spawnHorse(p);
         }
+
+        tickTask(10);
 
         SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
     }
 
     private void onInGame() {
         SpigotTaskTwo.getStateManager().registerListeners(new InGameListener());
+
+        Bukkit.getOnlinePlayers().forEach(p -> InGameListener.hasPassedThroughPortal.put(p.getUniqueId(), false));
     }
 
     private void onEndGame() {
-        SpigotTaskTwo.getStateManager().registerListeners(new EndListener());
+        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(EndListener.getWinner() + " has won!"));
     }
 
     private void tickTask(int timer) {
@@ -104,6 +112,7 @@ public class StateListener implements Listener {
 
             if (timer != 0) {
                 tickTask(timer - 1);
+                return;
             }
 
             Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()-> SpigotTaskTwo.getStateManager().nextState());
@@ -111,7 +120,7 @@ public class StateListener implements Listener {
     }
 
     private static void spawnHorse(Player p) {
-        Horse h = (Horse) p.getWorld().spawn(p.getLocation(), Horse.class);
+        Horse h = p.getWorld().spawn(p.getLocation(), Horse.class);
 
         AttributeInstance speed = ((EntityLiving) ((CraftEntity) h).getHandle())
                 .getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);

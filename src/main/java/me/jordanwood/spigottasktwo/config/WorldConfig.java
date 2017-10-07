@@ -2,9 +2,9 @@ package me.jordanwood.spigottasktwo.config;
 
 import me.jordanwood.spigottasktwo.config.Model.Portal;
 import me.jordanwood.spigottasktwo.config.Model.Volume;
+import org.bukkit.util.Vector;
 
 import java.util.List;
-import java.util.Vector;
 
 public class WorldConfig {
     private List<Portal> protals;
