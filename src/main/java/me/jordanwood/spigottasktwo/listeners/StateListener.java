@@ -3,6 +3,7 @@ package me.jordanwood.spigottasktwo.listeners;
 import me.jordanwood.spigottasktwo.SpigotTaskTwo;
 import me.jordanwood.spigottasktwo.config.WorldConfig;
 import me.jordanwood.spigottasktwo.events.StateChangeEvent;
+import me.jordanwood.spigottasktwo.managers.StateManager;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.SpacerRow;
 import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
@@ -82,7 +83,6 @@ public class StateListener implements Listener {
         InGameListener.gameBoard.addRows(new SpacerRow(), new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:"));
 
         int index = 0;
-        List<Horse> Horses = new ArrayList<>();
         for (Player p: Bukkit.getOnlinePlayers()) {
             Vector v = worldConfig.getSpawnLocations().get(index);
             p.teleport(new Location(world, v.getX(), v.getY(), v.getZ()));
@@ -104,6 +104,8 @@ public class StateListener implements Listener {
 
     private void onEndGame() {
         Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(EndListener.getWinner() + " has won!"));
+
+        SpigotTaskTwo.getStateManager().nextState();
     }
 
     private void tickTask(int timer) {
