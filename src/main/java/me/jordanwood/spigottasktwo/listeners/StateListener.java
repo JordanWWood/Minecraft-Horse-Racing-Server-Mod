@@ -1,30 +1,34 @@
 package me.jordanwood.spigottasktwo.listeners;
 
 import me.jordanwood.spigottasktwo.SpigotTaskTwo;
+import me.jordanwood.spigottasktwo.config.WorldConfig;
 import me.jordanwood.spigottasktwo.events.StateChangeEvent;
-import me.jordanwood.spigottasktwo.managers.ScoreboardManager;
-import me.jordanwood.spigottasktwo.managers.StateManager;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.SpacerRow;
 import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
 import me.jordanwood.spigottasktwo.utils.Title;
+
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import net.minecraft.server.v1_12_R1.AttributeInstance;
+import net.minecraft.server.v1_12_R1.EntityLiving;
+import net.minecraft.server.v1_12_R1.GenericAttributes;
+
+import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.generator.ChunkGenerator;
-import sun.security.provider.ConfigFile;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class StateListener implements Listener {
     private static String scoreboardTitle = ChatColor.GOLD +""+ ChatColor.BOLD + "SpigotTask2";
+    static WorldConfig worldConfig;
 
     @EventHandler
     public void onStateChange(StateChangeEvent e) {
@@ -72,16 +76,15 @@ public class StateListener implements Listener {
         wc.generator(new BlankChunkGenerator());
         World world = Bukkit.createWorld(wc);
 
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            p.teleport(new Location(world, 0, 0, 0));
-        }
-
         InGameListener.gameBoard = new Scoreboard(scoreboardTitle);
-
-        // TODO update as players move
         InGameListener.gameBoard.addRows(new SpacerRow(), new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:"));
+
+        List<Horse> Horses = new ArrayList<>();
         for (Player p: Bukkit.getOnlinePlayers()) {
+            p.teleport(new Location(world, 0, 0, 0));
+
             InGameListener.gameBoard.addRow(new TextRow(p.getName()));
+            spawnHorse(p);
         }
 
         SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
@@ -103,10 +106,25 @@ public class StateListener implements Listener {
                 tickTask(timer - 1);
             }
 
-            Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()->{
-                SpigotTaskTwo.getStateManager().nextState();
-            });
+            Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()-> SpigotTaskTwo.getStateManager().nextState());
         }, 20L);
+    }
+
+    private static void spawnHorse(Player p) {
+        Horse h = (Horse) p.getWorld().spawn(p.getLocation(), Horse.class);
+
+        AttributeInstance speed = ((EntityLiving) ((CraftEntity) h).getHandle())
+                .getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
+        speed.setValue(0.5D);
+
+        h.setTamed(true);
+        h.setOwner(p);
+        h.setJumpStrength(1.0D);
+        h.setHealth(50.0D);
+        h.setAdult();
+        h.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+
+        h.setPassenger(p);
     }
 }
 
