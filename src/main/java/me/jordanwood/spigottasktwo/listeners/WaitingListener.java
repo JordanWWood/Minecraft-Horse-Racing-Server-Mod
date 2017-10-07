@@ -49,11 +49,13 @@ public class WaitingListener implements Listener {
             if (timer != 0) {
                 ((TextRow)countDown.getRow(countDownTimeRow)).setText(String.format("%1$tM:%1$tS", TimeUnit.SECONDS.toMillis(timer)));
                 SpigotTaskTwo.getScoreboardManager().updateScoreboard();
+
                 tickTask(timer - 1);
             }
 
             ((TextRow)countDown.getRow(countDownTimeRow)).setText(String.format("%1$tM:%1$tS", TimeUnit.SECONDS.toMillis(timer)));
             SpigotTaskTwo.getScoreboardManager().updateScoreboard();
+
             Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()->{
                 SpigotTaskTwo.getStateManager().nextState();
             });

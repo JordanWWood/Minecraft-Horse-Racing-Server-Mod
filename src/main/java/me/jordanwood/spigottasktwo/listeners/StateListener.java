@@ -7,9 +7,21 @@ import me.jordanwood.spigottasktwo.managers.StateManager;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.SpacerRow;
 import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
+import me.jordanwood.spigottasktwo.utils.Title;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.generator.ChunkGenerator;
+import sun.security.provider.ConfigFile;
+
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class StateListener implements Listener {
     private static String scoreboardTitle = ChatColor.GOLD +""+ ChatColor.BOLD + "SpigotTask2";
@@ -52,6 +64,27 @@ public class StateListener implements Listener {
 
     private void onPreStart() {
         SpigotTaskTwo.getStateManager().registerListeners(new PreStartListener());
+
+        WorldCreator wc = new WorldCreator("racetrack");
+        wc.generateStructures(false);
+        wc.environment(org.bukkit.World.Environment.NORMAL);
+        wc.seed(0);
+        wc.generator(new BlankChunkGenerator());
+        World world = Bukkit.createWorld(wc);
+
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            p.teleport(new Location(world, 0, 0, 0));
+        }
+
+        InGameListener.gameBoard = new Scoreboard(scoreboardTitle);
+
+        // TODO update as players move
+        InGameListener.gameBoard.addRows(new SpacerRow(), new TextRow(ChatColor.GOLD + "" + ChatColor.BOLD + "Players:"));
+        for (Player p: Bukkit.getOnlinePlayers()) {
+            InGameListener.gameBoard.addRow(new TextRow(p.getName()));
+        }
+
+        SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
     }
 
     private void onInGame() {
@@ -61,4 +94,27 @@ public class StateListener implements Listener {
     private void onEndGame() {
         SpigotTaskTwo.getStateManager().registerListeners(new EndListener());
     }
+
+    private void tickTask(int timer) {
+        Bukkit.getScheduler().runTaskLater(SpigotTaskTwo.getInstance(), () -> {
+            Bukkit.getOnlinePlayers().forEach((player) -> Title.createTitle(player, String.valueOf(timer), ""));
+
+            if (timer != 0) {
+                tickTask(timer - 1);
+            }
+
+            Bukkit.getScheduler().runTask(SpigotTaskTwo.getInstance(), ()->{
+                SpigotTaskTwo.getStateManager().nextState();
+            });
+        }, 20L);
+    }
 }
+
+class BlankChunkGenerator extends ChunkGenerator {
+    @Override
+    public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid)
+    {
+        return new byte[world.getMaxHeight() / 16][];
+    }
+}
+

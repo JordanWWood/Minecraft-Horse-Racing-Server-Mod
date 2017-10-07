@@ -53,8 +53,4 @@ public class Scoreboard {
     public ConcurrentHashMap<UUID, Row> getRows() {
         return rows;
     }
-
-    /*public void deleteRow(UUID id) {
-        rows.remove(id);
-    }*/
 }
