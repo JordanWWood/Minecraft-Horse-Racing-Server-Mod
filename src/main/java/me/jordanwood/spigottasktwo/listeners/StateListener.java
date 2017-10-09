@@ -7,6 +7,7 @@ import me.jordanwood.spigottasktwo.managers.StateManager;
 import me.jordanwood.spigottasktwo.scoreboard.Scoreboard;
 import me.jordanwood.spigottasktwo.scoreboard.row.SpacerRow;
 import me.jordanwood.spigottasktwo.scoreboard.row.TextRow;
+import me.jordanwood.spigottasktwo.utils.State;
 import me.jordanwood.spigottasktwo.utils.Title;
 
 import net.md_5.bungee.api.ChatColor;
@@ -102,7 +103,17 @@ public class StateListener implements Listener {
             spawnHorse(p);
         }
 
-        tickTask(10, true, null);
+        tickTask(10, true, 1, () -> {
+            tickTask(300, false, 60,() -> {
+                if (SpigotTaskTwo.getStateManager().getCurrentState() == State.INGAME) {
+                    SpigotTaskTwo.getStateManager().nextState();
+
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        p.sendMessage(ChatColor.RED + "Time has expired!");
+                    }
+                }
+            });
+        });
 
         SpigotTaskTwo.getScoreboardManager().setScoreboard(InGameListener.gameBoard);
     }
@@ -119,24 +130,27 @@ public class StateListener implements Listener {
             player.sendMessage(ChatColor.GOLD + "You will be moved back to lobby in 10 seconds");
         });
 
-        tickTask(10, false, () -> {
+        tickTask(10, false, 1, () -> {
             for (Player player : Bukkit.getOnlinePlayers())
                 player.teleport(previousLocations.get(player.getUniqueId()));
         });
     }
 
-    private void tickTask(int timer, boolean title, @Nullable Runnable onEnd) {
+    private void tickTask(int timer, boolean title, int intervaul, @Nullable Runnable onEnd) {
         Bukkit.getScheduler().runTaskLater(SpigotTaskTwo.getInstance(), () -> {
-            Bukkit.getOnlinePlayers().forEach((player) -> {
-                if (title) {
-                    Title.createTitle(player, String.valueOf(timer), "");
-                } else {
-                    player.sendMessage(ChatColor.GOLD + "" + timer);
-                }
-            });
+
+            if (timer % intervaul == 0) {
+                Bukkit.getOnlinePlayers().forEach((player) -> {
+                    if (title) {
+                        Title.createTitle(player, String.valueOf(timer), "");
+                    } else {
+                        player.sendMessage(ChatColor.GOLD + "" + timer);
+                    }
+                });
+            }
 
             if (timer != 0) {
-                tickTask(timer - 1, title, onEnd);
+                tickTask(timer - 1, title, intervaul, onEnd);
                 return;
             }
 
